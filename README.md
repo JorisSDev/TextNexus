@@ -9,11 +9,11 @@ TextNexus is built with a **multi-access architecture**, ensuring usability **bo
 ---
 
 ## **Key Features**  
-- ✅ **Multi-Model AI Integration** – Connects various **pretrained NLP models and LLM APIs** for intelligent text transformation.  
-- ✅ **Memory-Persistent Processing** – Features a **database-backed memory system** to enhance contextual awareness.  
-- ✅ **Model-Orchestrated Text Refinement** – Enables **dynamic linking between AI models** to generate optimized outputs.  
-- ✅ **API & UI Accessibility** – Designed for both **interactive use via a user interface** and **programmatic access through an API**.  
-- ✅ **Scalable & Extensible** – Modular architecture allows easy **expansion with additional AI models and processing pipelines**.  
+✅ **Multi-Model AI Integration** – Connects various **pretrained NLP models and LLM APIs** for intelligent text transformation.  
+✅ **Memory-Persistent Processing** – Features a **database-backed memory system** to enhance contextual awareness.  
+✅ **Model-Orchestrated Text Refinement** – Enables **dynamic linking between AI models** to generate optimized outputs.  
+✅ **API & UI Accessibility** – Designed for both **interactive use via a user interface** and **programmatic access through an API**.  
+✅ **Scalable & Extensible** – Modular architecture allows easy **expansion with additional AI models and processing pipelines**.  
 
 ---
 
