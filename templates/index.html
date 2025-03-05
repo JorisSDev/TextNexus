@@ -9,29 +9,47 @@
 </head>
 <body class="bg-light">
     <div class="container py-5">
+
         <!-- Header -->
-        <h1 class="text-center mb-4">AI Paraphrasing Tool</h1>
+        <h1 class="text-center mb-4">Text Paraphrasing Tool</h1>
 
         <!-- Input Form -->
         <div class="card shadow p-4">
             <form method="POST">
                 <div class="mb-3">
                     <label for="inputText" class="form-label">Enter Your Text</label>
-                    <textarea id="inputText" name="input_text" class="form-control" rows="5" placeholder="Type your text here..." required></textarea>
+                    <textarea id="inputText" name="input_text" class="form-control" rows="5" placeholder="Type your text here..." required>{{ input_text }}</textarea>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Paraphrase</button>
+
+                <!-- Model Selection Dropdown -->
+                <div class="mb-3">
+                    <label for="modelSelect" class="form-label">Select Model</label>
+                    <select id="modelSelect" name="model" class="form-select">
+                        {% set models = {
+                            "gpt2": "GPT-2 (Text Generation)",
+                            "deepseek": "DeepSeek-R1_1.5B (Text Generation)",
+                            "bart": "BART (Summarization)",
+                            "bert": "BERT (Masked Word Prediction)"
+                        } %}
+                        {% for key, value in models.items() %}
+                            <option value="{{ key }}" {% if selected_model == key %}selected{% endif %}>
+                                {{ value }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Generate</button>
             </form>
         </div>
 
         <!-- Output Results -->
         {% if output %}
         <div class="card shadow mt-4 p-4">
-            <h2>Results</h2>
-            <div class="mb-3">
-                <p><strong>Summary:</strong> {{ output['summary'] }}</p>
-                <p><strong>Rephrased:</strong> {{ output['rephrase'] }}</p>
-                <p><strong>Extended:</strong> {{ output['extended'] }}</p>
-            </div>
+            <h2>Generated Text</h2>
+            {% for text in output %}
+            <p class="border p-2">{{ text }}</p>
+            {% endfor %}
         </div>
         {% endif %}
     </div>
