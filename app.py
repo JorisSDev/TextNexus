@@ -1,7 +1,37 @@
 from flask import Flask, render_template, request
 from transformers import pipeline, set_seed
+import sqlite3
 
 app = Flask(__name__)
+
+
+# Initialize SQLite database
+def init_db():
+    conn = sqlite3.connect("textnexus.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS text_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        input_text TEXT NOT NULL,
+        output_text TEXT NOT NULL,
+        model TEXT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+    conn.commit()
+    conn.close()
+
+
+init_db()
+
+
+def save_to_db(input_text, output_text, model):
+    conn = sqlite3.connect("textnexus.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO text_records (input_text, output_text, model) VALUES (?, ?, ?)",
+                   (input_text, output_text, model))
+    conn.commit()
+    conn.close()
 
 
 def load_gpt2():
@@ -35,13 +65,17 @@ generator_deepseek = load_deepseek()
 def generate_with_gpt2(text):
     """Generates paraphrased text using GPT-2."""
     results = generator_gpt2(text, max_length=50, num_return_sequences=3, truncation=True)
-    return [res["generated_text"] for res in results]
+    output = [res["generated_text"] for res in results]
+    save_to_db(text, " | ".join(output), "gpt2")
+    return output
 
 
 def generate_with_bart(text):
     """Summarizes text using BART."""
     summary = summarizer_bart(text, max_length=130, min_length=30, do_sample=False)
-    return [summary[0]["summary_text"]]
+    output = [summary[0]["summary_text"]]
+    save_to_db(text, output[0], "bart")
+    return output
 
 
 def generate_with_bert(text):
@@ -50,13 +84,17 @@ def generate_with_bert(text):
         return ["Please include a [MASK] token in the input text."]
 
     predictions = mask_filler_bert(text)
-    return [f"{pred['sequence']} (Confidence: {pred['score']:.2%})" for pred in predictions[:5]]
+    output = [f"{pred['sequence']} (Confidence: {pred['score']:.2%})" for pred in predictions[:5]]
+    save_to_db(text, " | ".join(output), "bert")
+    return output
 
 
 def generate_with_deepseek(text):
     """Generates text using DeepSeek-R1-Distill-Qwen-1.5B."""
     results = generator_deepseek(text, max_length=300, do_sample=True, temperature=0.6, top_p=0.95)
-    return [res["generated_text"] for res in results]
+    output = [res["generated_text"] for res in results]
+    save_to_db(text, " | ".join(output), "deepseek")
+    return output
 
 
 @app.route("/", methods=["GET", "POST"])
