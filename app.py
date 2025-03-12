@@ -4,8 +4,6 @@ import sqlite3
 
 app = Flask(__name__)
 
-
-# Initialize SQLite database
 def init_db():
     conn = sqlite3.connect("textnexus.db")
     cursor = conn.cursor()
@@ -24,7 +22,6 @@ def init_db():
 
 init_db()
 
-
 def save_to_db(input_text, output_text, model):
     conn = sqlite3.connect("textnexus.db")
     cursor = conn.cursor()
@@ -41,17 +38,14 @@ def load_gpt2():
 
 
 def load_bart():
-    """Loads the BART model for text summarization."""
     return pipeline("summarization", model="facebook/bart-large-cnn")
 
 
 def load_bert():
-    """Loads the BERT model for masked language modeling."""
     return pipeline("fill-mask", model="bert-base-uncased")
 
 
 def load_deepseek():
-    """Loads the DeepSeek-R1-Distill-Qwen-1.5B model for text generation."""
     return pipeline("text-generation", model="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B", truncation=True)
 
 
@@ -63,7 +57,6 @@ generator_deepseek = load_deepseek()
 
 
 def generate_with_gpt2(text):
-    """Generates paraphrased text using GPT-2."""
     results = generator_gpt2(text, max_length=50, num_return_sequences=3, truncation=True)
     output = [res["generated_text"] for res in results]
     save_to_db(text, " | ".join(output), "gpt2")
@@ -71,7 +64,6 @@ def generate_with_gpt2(text):
 
 
 def generate_with_bart(text):
-    """Summarizes text using BART."""
     summary = summarizer_bart(text, max_length=130, min_length=30, do_sample=False)
     output = [summary[0]["summary_text"]]
     save_to_db(text, output[0], "bart")
@@ -90,7 +82,6 @@ def generate_with_bert(text):
 
 
 def generate_with_deepseek(text):
-    """Generates text using DeepSeek-R1-Distill-Qwen-1.5B."""
     results = generator_deepseek(text, max_length=300, do_sample=True, temperature=0.6, top_p=0.95)
     output = [res["generated_text"] for res in results]
     save_to_db(text, " | ".join(output), "deepseek")
@@ -99,10 +90,6 @@ def generate_with_deepseek(text):
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-    """
-    Renders the homepage with a text input form.
-    Generates paraphrased text, summarized text, masked word predictions, or general text generation.
-    """
     output = None
     selected_model = "gpt2"  # Default model
     input_text = ""
