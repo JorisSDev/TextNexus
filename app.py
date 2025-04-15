@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request
-from transformers import pipeline, set_seed
 import sqlite3
+
+from flask import Flask, render_template, request
+from openai import OpenAI
+from transformers import pipeline, set_seed
 
 app = Flask(__name__)
 
@@ -87,6 +89,20 @@ def generate_with_deepseek(text):
     save_to_db(text, " | ".join(output), "deepseek")
     return output
 
+def generate_with_gpt41(text, api_key):
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4.1",
+            messages=[{"role": "user", "content": text}],
+            max_tokens=300,
+            temperature=0.7
+        )
+        output_text = response.choices[0].message.content
+        save_to_db(text, output_text, "gpt41")
+        return [output_text]
+    except Exception as e:
+        return [f"Error calling GPT-4.1: {str(e)}"]
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -97,6 +113,7 @@ def home():
     if request.method == "POST":
         input_text = request.form.get("input_text", "").strip()
         selected_model = request.form.get("model", "gpt2")
+        api_key = request.form.get("api_key", "").strip()
 
         if input_text:
             if selected_model == "gpt2":
@@ -107,6 +124,8 @@ def home():
                 output = generate_with_bert(input_text)
             elif selected_model == "deepseek":
                 output = generate_with_deepseek(input_text)
+            elif selected_model == "gpt41":
+                output = generate_with_gpt41(input_text, api_key)
             else:
                 output = ["Invalid model selected."]
 
