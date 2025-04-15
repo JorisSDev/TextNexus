@@ -59,7 +59,7 @@ generator_deepseek = load_deepseek()
 
 
 def generate_with_gpt2(text):
-    results = generator_gpt2(text, max_length=50, num_return_sequences=3, truncation=True)
+    results = generator_gpt2(text, max_new_tokens=50, num_return_sequences=3)
     output = [res["generated_text"] for res in results]
     save_to_db(text, " | ".join(output), "gpt2")
     return output
@@ -84,7 +84,7 @@ def generate_with_bert(text):
 
 
 def generate_with_deepseek(text):
-    results = generator_deepseek(text, max_length=300, do_sample=True, temperature=0.6, top_p=0.95)
+    results = generator_deepseek(text, max_new_tokens=300, do_sample=True, temperature=0.6, top_p=0.95)
     output = [res["generated_text"] for res in results]
     save_to_db(text, " | ".join(output), "deepseek")
     return output
@@ -131,6 +131,40 @@ def home():
 
     return render_template("index.html", output=output, selected_model=selected_model, input_text=input_text)
 
+chat_sessions = {
+    "session1": [],
+    "session2": [],
+    "session3": []
+}
+
+@app.route("/chatbot", methods=["GET", "POST"])
+def chatbot():
+    selected_session = request.args.get("session", "session1")
+    user_input = ""
+    if request.method == "POST":
+        user_input = request.form.get("user_input", "")
+        if user_input:
+            # Append user input first
+            chat_sessions[selected_session].append({"role": "user", "content": user_input})
+
+            # Build prompt from conversation history
+            messages = chat_sessions[selected_session]
+            prompt = ""
+            for msg in messages:
+                if msg["role"] == "user":
+                    prompt += f"User: {msg['content']}\n"
+                elif msg["role"] == "bot":
+                    prompt += f"Bot: {msg['content']}\n"
+
+            gpt2_response = generator_gpt2(prompt, max_new_tokens=100, num_return_sequences=1, truncation=True)
+            full_generated_text = gpt2_response[0]["generated_text"]
+            generated_part = full_generated_text[len(prompt):].strip()
+            chat_sessions[selected_session].append({"role": "bot", "content": generated_part})
+
+    return render_template("chatbot.html",
+                           sessions=chat_sessions.keys(),
+                           selected_session=selected_session,
+                           messages=chat_sessions[selected_session])
 
 if __name__ == "__main__":
     app.run(debug=True)
