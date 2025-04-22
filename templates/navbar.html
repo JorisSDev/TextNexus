@@ -6,6 +6,7 @@
         <a href="/" class="nav-link {% if request.path == '/' %}fw-semibold text-primary{% endif %}">Text Generator</a>
         <a href="/chatbot" class="nav-link {% if request.path.startswith('/chatbot') %}fw-semibold text-primary{% endif %}">Chatbot</a>
         <a href="/info" class="nav-link {% if request.path.startswith('/info') %}fw-semibold text-primary{% endif %}">Info</a>
+        <a href="/dashboard" class="nav-link {% if request.path.startswith('/dashboard') %}fw-semibold text-primary{% endif %}">Dashboard</a>
         <a href="/settings" class="nav-link" title="Settings">
             <i class="fas fa-cog"></i>
         </a>

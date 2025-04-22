@@ -1,5 +1,6 @@
 import sqlite3
 import torch
+import pandas as pd
 
 from flask import Flask, render_template, request, redirect, url_for
 from openai import OpenAI
@@ -316,6 +317,44 @@ def info():
 @app.route("/model_configuration")
 def model_configuration():
     return render_template("model_configuration.html")
+
+@app.route("/dashboard")
+def dashboard():
+    conn = sqlite3.connect("textnexus.db")
+    df = pd.read_sql_query("SELECT * FROM text_records", conn)
+    conn.close()
+
+    # Ensure all data are pure Python types
+    model_usage = df['model'].value_counts()
+    model_labels = list(map(str, model_usage.index))
+    model_counts = list(map(int, model_usage.values))  # Convert from np.int64 to int
+
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    daily_usage = df['timestamp'].dt.date.value_counts().sort_index()
+    daily_dates = [str(date) for date in daily_usage.index]
+    daily_counts = list(map(int, daily_usage.values))
+
+    top_sessions_raw = df['chat_session_id'].value_counts().head(5)
+    top_sessions = [(f"Session {int(sid)}", int(count)) for sid, count in top_sessions_raw.items()]
+
+    df['output_length'] = df['output_text'].apply(lambda x: len(x.split()))
+    avg_output_by_model = df.groupby('model')['output_length'].mean()
+    output_models = list(map(str, avg_output_by_model.index))
+    output_lengths = [round(float(val), 2) for val in avg_output_by_model.values]
+
+    recent_logs = df.sort_values(by='timestamp', ascending=False).head(10).to_dict(orient='records')
+
+    return render_template(
+        "dashboard.html",
+        model_labels=model_labels,
+        model_counts=model_counts,
+        daily_dates=daily_dates,
+        daily_counts=daily_counts,
+        top_sessions=top_sessions,
+        output_models=output_models,
+        output_lengths=output_lengths,
+        recent_logs=recent_logs
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

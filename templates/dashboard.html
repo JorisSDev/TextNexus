@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard – TextNexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container mt-5">
+        <h2 class="mb-4">📊 TextNexus Dashboard</h2>
+
+        <!-- Row 1: Summary Charts -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <canvas id="modelUsageChart"></canvas>
+            </div>
+            <div class="col-md-6 mb-4">
+                <canvas id="dailyUsageChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Row 2: Top Sessions -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <h5>🔥 Most Active Sessions</h5>
+                <ul class="list-group">
+                    {% for session, count in top_sessions %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ session }}
+                        <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <h5>📈 Top Output Volume (by model)</h5>
+                <canvas id="outputVolumeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Row 3: Latest Logs -->
+        <div class="row">
+            <div class="col-12 mt-4">
+                <h5>📜 Recent Logs</h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Model</th>
+                            <th>Input</th>
+                            <th>Output (truncated)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_logs %}
+                        <tr>
+                            <td>{{ log.timestamp }}</td>
+                            <td>{{ log.model }}</td>
+                            <td>{{ log.input_text[:30] }}...</td>
+                            <td>{{ log.output_text[:40] }}...</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Model Usage Chart
+    const modelUsageCtx = document.getElementById('modelUsageChart');
+    if (modelUsageCtx) {
+        new Chart(modelUsageCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ model_labels | safe }},
+                datasets: [{
+                    label: 'Model Usage Count',
+                    data: {{ model_counts | safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    // Daily Usage Chart
+    const dailyUsageCtx = document.getElementById('dailyUsageChart');
+    if (dailyUsageCtx) {
+        new Chart(dailyUsageCtx, {
+            type: 'line',
+            data: {
+                labels: {{ daily_dates | safe }},
+                datasets: [{
+                    label: 'Daily Usage',
+                    data: {{ daily_counts | safe }},
+                    fill: true,
+                    tension: 0.3,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true } }
+            }
+        });
+    }
+
+    // Output Volume Chart
+    const outputVolumeCtx = document.getElementById('outputVolumeChart');
+    if (outputVolumeCtx) {
+        new Chart(outputVolumeCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ output_models | safe }},
+                datasets: [{
+                    label: 'Average Output Length',
+                    data: {{ output_lengths | safe }},
+                    backgroundColor: 'rgba(255, 159, 64, 0.7)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>
