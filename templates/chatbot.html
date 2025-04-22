@@ -34,41 +34,136 @@
             background-color: #007bff;
             color: white;
         }
+        .chat-bubble {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            clear: both;
+        }
+        .chat-bubble.user {
+            background-color: #d1e7dd;
+            margin-left: auto;
+            text-align: right;
+        }
+        .chat-bubble.bot {
+            background-color: #f8d7da;
+            margin-right: auto;
+            text-align: left;
+        }
+        .chat-bubble .role {
+            font-weight: bold;
+            display: block;
+        }
     </style>
 </head>
 <body>
-    <div id="sidebar">
-        <div class="mb-3">
-            <label for="modelSelect" class="form-label">Select Model</label>
-            <select id="modelSelect" name="model" class="form-select">
-                <option value="gpt2">GPT-2 (Text Generation)</option>
-                <option value="deepseek">DeepSeek-R1_1.5B (Text Generation)</option>
-{#                <option value="gpt41">GPT-4.1 (OpenAI API)</option>#}
-            </select>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ messages[0] }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+      {% endif %}
+    {% endwith %}
+    <div id="sidebar">
         <h5>Sessions</h5>
-        {% for session in sessions %}
-            <a href="{{ url_for('chatbot', session=session) }}" class="session-link {% if selected_session == session %}active{% endif %}">
-                {{ session }}
-            </a>
-        {% endfor %}
-    </div>
-    <div id="main">
-        <h1 class="text-center mb-2">TextNexuss</h1>
-        <p class="text-center text-muted">A Multi-Model AI System for Advanced Text Processing and Transformation</p>
-        <div class="mb-4">
-            {% for msg in messages %}
-                <div class="mb-2">
-                    <strong>{{ msg.role.title() }}:</strong> {{ msg.content }}
+        <form method="POST" action="{{ url_for('create_session') }}" class="mb-3 d-flex">
+            <input type="text" name="new_session" class="form-control me-2" placeholder="New session name" required>
+            <button class="btn btn-sm btn-outline-primary" type="submit">+</button>
+        </form>
+        <div class="list-group">
+            {% for session in sessions %}
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <a href="{{ url_for('chatbot', session=session) }}"
+                       class="list-group-item list-group-item-action {% if selected_session == session %}active{% endif %}">
+                        {{ session }}
+                    </a>
+                    {% if session != selected_session %}
+                      <form method="POST" action="{{ url_for('delete_session', session_name=session) }}" class="ms-2"
+                            onsubmit="return confirm('Delete session {{ session }}?')">
+                          <button type="submit" class="btn btn-sm btn-outline-danger">x</button>
+                      </form>
+                    {% endif %}
                 </div>
             {% endfor %}
         </div>
-        <form method="POST">
+    </div>
+    <div id="main">
+        <div class="mb-3">
+            <label for="modelSelect" class="form-label">Model Used for This Session</label>
+            <select id="modelSelect" name="model" class="form-select" form="chatForm">
+                <option value="gpt2" {% if selected_model == 'gpt2' %}selected{% endif %}>GPT-2</option>
+                <option value="deepseek" {% if selected_model == 'deepseek' %}selected{% endif %}>DeepSeek-R1</option>
+                <option value="gpt41" {% if selected_model == 'gpt41' %}selected{% endif %}>GPT-4.1</option>
+            </select>
+        </div>
+        <h1 class="text-center mb-2">TextNexus</h1>
+        <p class="text-center text-muted">A Multi-Model AI System for Advanced Text Processing and Transformation</p>
+        <div class="mb-4">
+            {% for msg in messages %}
+                {% if msg.role == "user" %}
+                  <div class="chat-bubble user"><span class="role">You:</span> {{ msg.content }}</div>
+                {% elif msg.role == "bot" %}
+                  <div class="chat-bubble bot"><span class="role">Bot:</span> {{ msg.content }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <form method="POST" id="chatForm">
+            <div id="apiKeyContainer" class="mb-3" style="display: none;">
+                <label for="apiKey" class="form-label">Enter API Key for GPT-4.1</label>
+                <input type="password" id="apiKey" name="api_key" class="form-control"
+                       placeholder="Your OpenAI API key here..."
+                       value="{{ request.form.api_key or '' }}">
+            </div>
             <div class="mb-3">
                 <textarea name="user_input" class="form-control" rows="3" placeholder="Type your message..."></textarea>
+            </div>
+            <div id="loadingIndicator" class="text-center mb-3" style="display:none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Generating response...</p>
             </div>
             <button type="submit" class="btn btn-primary">Send</button>
         </form>
     </div>
 </body>
+<script>
+const chatMain = document.getElementById("main");
+chatMain.scrollTop = chatMain.scrollHeight;
+
+document.addEventListener("keydown", function(e) {
+    const input = document.querySelector("textarea[name='user_input']");
+    if (e.key === "/" && document.activeElement !== input) {
+        e.preventDefault();
+        input.focus();
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelector("textarea[name='user_input']").focus();
+});
+
+document.getElementById("chatForm").addEventListener("submit", function () {
+    document.getElementById("loadingIndicator").style.display = "block";
+    setTimeout(() => {
+        document.querySelector("textarea[name='user_input']").focus();
+    }, 500);
+});
+
+document.querySelector("form").addEventListener("submit", function () {
+    document.getElementById("loadingIndicator").style.display = "block";
+});
+
+const modelSelect = document.getElementById("modelSelect");
+const apiKeyContainer = document.getElementById("apiKeyContainer");
+
+function toggleApiKeyField() {
+    apiKeyContainer.style.display = modelSelect.value === "gpt41" ? "block" : "none";
+}
+
+modelSelect.addEventListener("change", toggleApiKeyField);
+toggleApiKeyField(); // Initial check
+</script>
 </html>

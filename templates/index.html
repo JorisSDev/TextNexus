@@ -48,6 +48,13 @@
                            value="{{ request.form.api_key or '' }}">
                 </div>
 
+                <div id="loadingIndicator" class="text-center mb-3" style="display:none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Generating response...</p>
+                </div>
+
                 <button type="submit" class="btn btn-primary w-100">Generate</button>
             </form>
         </div>
@@ -75,6 +82,10 @@
 
         modelSelect.addEventListener("change", toggleApiKeyField);
         toggleApiKeyField(); // Initial check
+    });
+
+    document.querySelector("form").addEventListener("submit", function () {
+        document.getElementById("loadingIndicator").style.display = "block";
     });
     </script>
 </body>
