@@ -1,8 +1,9 @@
 import sqlite3
+import torch
 
 from flask import Flask, render_template, request, redirect, url_for
 from openai import OpenAI
-from transformers import pipeline, set_seed
+from transformers import pipeline, set_seed, AutoModelForCausalLM, AutoTokenizer
 
 app = Flask(__name__)
 
@@ -135,6 +136,29 @@ def generate_with_gpt41(text, api_key, chat_session_id=None):
         else:
             return [f"Unexpected error calling GPT-4.1:\n{str(e)}"]
 
+def generate_with_bitnet(text, chat_session_id=None):
+    model_id = "microsoft/bitnet-b1.58-2B-4T"
+
+    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.bfloat16,
+        trust_remote_code=True
+    )
+
+    messages = [
+        {"role": "system", "content": "You are a helpful AI assistant."},
+        {"role": "user", "content": text},
+    ]
+    prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    chat_input = tokenizer(prompt, return_tensors="pt").to(model.device)
+
+    chat_outputs = model.generate(**chat_input, max_new_tokens=50)
+    response = tokenizer.decode(chat_outputs[0][chat_input['input_ids'].shape[-1]:], skip_special_tokens=True)
+
+    save_to_db(text, response, "bitnet", chat_session_id)
+    return [response]
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     output = None
@@ -157,6 +181,8 @@ def home():
                 output = generate_with_deepseek(input_text)
             elif selected_model == "gpt41":
                 output = generate_with_gpt41(input_text, api_key)
+            elif selected_model == "bitnet":
+                output = generate_with_bitnet(input_text)
             else:
                 output = ["Invalid model selected."]
 
@@ -265,10 +291,31 @@ def delete_session(session_name):
     conn.close()
     return redirect(url_for("chatbot"))
 
+
 # Settings page route
 @app.route("/settings")
 def settings():
     return render_template("settings.html")
+
+@app.route("/users")
+def users():
+    return render_template("users.html")
+
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
+@app.route("/register")
+def register():
+    return render_template("register.html")
+
+@app.route("/info")
+def info():
+    return render_template("info.html")
+
+@app.route("/model_configuration")
+def model_configuration():
+    return render_template("model_configuration.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

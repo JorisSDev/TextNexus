@@ -32,7 +32,8 @@
                             "deepseek": "DeepSeek-R1_1.5B (Text Generation)",
                             "bart": "BART (Summarization)",
                             "bert": "BERT (Masked Word Prediction)",
-                            "gpt41": "GPT-4.1 (OpenAI API)"
+                            "gpt41": "GPT-4.1 (OpenAI API)",
+                            "bitnet": "BitNet b1.58 (Text Generation)"
                         } %}
                         {% for key, value in models.items() %}
                             <option value="{{ key }}" {% if selected_model == key %}selected{% endif %}>

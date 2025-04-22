@@ -2,171 +2,224 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TextNexus Chat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         body {
             overflow: hidden;
         }
         #sidebar {
-            width: 250px;
+            width: 280px; /* Slightly wider sidebar for better readability */
             background-color: #f8f9fa;
             border-right: 1px solid #dee2e6;
-            padding: 1rem;
+            padding: 1.5rem; /* Slightly more padding */
             overflow-y: auto;
         }
-        #main {
+        #main-content {
             flex-grow: 1;
             padding: 2rem;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .session-item {
+            margin-bottom: 0.5rem;
         }
         .session-link {
             display: block;
-            padding: 0.5rem;
-            margin-bottom: 0.25rem;
+            padding: 0.75rem 1rem;
             text-decoration: none;
-            color: #000;
-            border-radius: 4px;
+            color: #343a40; /* Darker text for better contrast */
+            border-radius: 0.25rem;
+            transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+        }
+        .session-link:hover {
+            background-color: #e9ecef;
         }
         .session-link.active {
             background-color: #007bff;
             color: white;
+            font-weight: 500;
+        }
+        .chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem; /* Space for the input area */
         }
         .chat-bubble {
-            max-width: 70%;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
+            max-width: 75%; /* Slightly wider for better readability */
+            padding: 0.8rem 1.1rem;
+            border-radius: 0.3rem;
+            margin-bottom: 0.6rem;
             clear: both;
+            line-height: 1.6;
         }
         .chat-bubble.user {
-            background-color: #d1e7dd;
+            background-color: #e2f7cb; /* Light green for user messages */
             margin-left: auto;
             text-align: right;
+            color: #212529;
         }
         .chat-bubble.bot {
-            background-color: #f8d7da;
+            background-color: #f0f0f0; /* Light gray for bot messages */
             margin-right: auto;
             text-align: left;
+            color: #212529;
         }
         .chat-bubble .role {
             font-weight: bold;
             display: block;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+        #chat-input-area {
+            margin-top: auto; /* Push to the bottom */
+            padding-top: 1rem;
+            border-top: 1px solid #dee2e6;
         }
     </style>
 </head>
 <body>
-{% include 'navbar.html' %}
-<div class="d-flex" style="height: calc(100vh - 70px);">
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ messages[0] }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    {% include 'navbar.html' %}
+    <div class="d-flex" style="height: calc(100vh - 70px);">
+        <div id="sidebar" class="p-3">
+            <h5 class="mb-3">Sessions</h5>
+            <form method="POST" action="{{ url_for('create_session') }}" class="mb-3 d-flex">
+                <input type="text" name="new_session" class="form-control form-control-sm me-2" placeholder="New session name" required>
+                <button class="btn btn-sm btn-outline-primary" type="submit"><i class="fas fa-plus"></i></button>
+            </form>
+            <div class="list-group">
+                {% for session in sessions %}
+                    <div class="d-flex justify-content-between align-items-center session-item">
+                        <a href="{{ url_for('chatbot', session=session) }}"
+                           class="list-group-item list-group-item-action session-link {% if selected_session == session %}active{% endif %}">
+                            {{ session }}
+                        </a>
+                        {% if session != selected_session %}
+                            <form method="POST" action="{{ url_for('delete_session', session_name=session) }}" class="ms-2"
+                                  onsubmit="return confirm('Delete session {{ session }}?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-      {% endif %}
-    {% endwith %}
-    <div id="sidebar">
-        <h5>Sessions</h5>
-        <form method="POST" action="{{ url_for('create_session') }}" class="mb-3 d-flex">
-            <input type="text" name="new_session" class="form-control me-2" placeholder="New session name" required>
-            <button class="btn btn-sm btn-outline-primary" type="submit">+</button>
-        </form>
-        <div class="list-group">
-            {% for session in sessions %}
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <a href="{{ url_for('chatbot', session=session) }}"
-                       class="list-group-item list-group-item-action {% if selected_session == session %}active{% endif %}">
-                        {{ session }}
-                    </a>
-                    {% if session != selected_session %}
-                      <form method="POST" action="{{ url_for('delete_session', session_name=session) }}" class="ms-2"
-                            onsubmit="return confirm('Delete session {{ session }}?')">
-                          <button type="submit" class="btn btn-sm btn-outline-danger">x</button>
-                      </form>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-    <div class="container-fluid py-4">
-    <div id="main">
-        <div class="mb-3">
-            <label for="modelSelect" class="form-label">Model Used for This Session</label>
-            <select id="modelSelect" name="model" class="form-select" form="chatForm">
-                <option value="gpt2" {% if selected_model == 'gpt2' %}selected{% endif %}>GPT-2</option>
-                <option value="deepseek" {% if selected_model == 'deepseek' %}selected{% endif %}>DeepSeek-R1</option>
-                <option value="gpt41" {% if selected_model == 'gpt41' %}selected{% endif %}>GPT-4.1</option>
-            </select>
-        </div>
-        <h1 class="text-center mb-2">TextNexus</h1>
-        <p class="text-center text-muted">A Multi-Model AI System for Advanced Text Processing and Transformation</p>
-        <div class="mb-4">
-            {% for msg in messages %}
-                {% if msg.role == "user" %}
-                  <div class="chat-bubble user"><span class="role">You:</span> {{ msg.content }}</div>
-                {% elif msg.role == "bot" %}
-                  <div class="chat-bubble bot"><span class="role">Bot:</span> {{ msg.content }}</div>
+        <div id="main-content" class="container-fluid py-3">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ messages[0] }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 {% endif %}
-            {% endfor %}
-        </div>
-        <form method="POST" id="chatForm">
-            <div id="apiKeyContainer" class="mb-3" style="display: none;">
-                <label for="apiKey" class="form-label">Enter API Key for GPT-4.1</label>
-                <input type="password" id="apiKey" name="api_key" class="form-control"
-                       placeholder="Your OpenAI API key here..."
-                       value="{{ request.form.api_key or '' }}">
-            </div>
+            {% endwith %}
+
             <div class="mb-3">
-                <textarea name="user_input" class="form-control" rows="3" placeholder="Type your message..."></textarea>
+                <label for="modelSelect" class="form-label">Model Used for This Session</label>
+                <select id="modelSelect" name="model" class="form-select form-select-sm" form="chatForm">
+                    <option value="gpt2" {% if selected_model == 'gpt2' %}selected{% endif %}>GPT-2</option>
+                    <option value="deepseek" {% if selected_model == 'deepseek' %}selected{% endif %}>DeepSeek-R1</option>
+                    <option value="gpt41" {% if selected_model == 'gpt41' %}selected{% endif %}>GPT-4.1</option>
+                </select>
             </div>
-            <div id="loadingIndicator" class="text-center mb-3" style="display:none;">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+
+            <h1 class="text-center mb-3">TextNexus Chat</h1>
+            <p class="text-center text-muted mb-4">Engage in dynamic conversations powered by advanced AI models.</p>
+
+            <div class="chat-container mb-4">
+                {% for msg in messages %}
+                    {% if msg.role == "user" %}
+                        <div class="chat-bubble user">
+                            <span class="role">You:</span> {{ msg.content }}
+                        </div>
+                    {% elif msg.role == "bot" %}
+                        <div class="chat-bubble bot">
+                            <span class="role">Bot:</span> {{ msg.content }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                <div id="loadingIndicator" class="text-center mb-3" style="display:none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Generating response...</p>
                 </div>
-                <p class="mt-2">Generating response...</p>
             </div>
-            <button type="submit" class="btn btn-primary">Send</button>
-        </form>
+
+            <div id="chat-input-area">
+                <form method="POST" id="chatForm">
+                    <div id="apiKeyContainer" class="mb-3" style="display: none;">
+                        <label for="apiKey" class="form-label">Enter API Key for GPT-4.1</label>
+                        <input type="password" id="apiKey" name="api_key" class="form-control form-control-sm"
+                               placeholder="Your OpenAI API key here..."
+                               value="{{ request.form.api_key or '' }}">
+                    </div>
+                    <div class="mb-2">
+                        <textarea name="user_input" class="form-control form-control-lg" rows="3" placeholder="Type your message..." autofocus></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
-    </div>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const chatContainer = document.querySelector(".chat-container");
+        const loadingIndicator = document.getElementById("loadingIndicator");
+        const chatForm = document.getElementById("chatForm");
+        const userInput = document.querySelector("textarea[name='user_input']");
+        const modelSelect = document.getElementById("modelSelect");
+        const apiKeyContainer = document.getElementById("apiKeyContainer");
+
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Scroll to bottom on page load and after new messages
+        document.addEventListener("DOMContentLoaded", scrollToBottom);
+
+        chatForm.addEventListener("submit", function () {
+            loadingIndicator.style.display = "block";
+            // Optionally disable the input and button during loading
+            userInput.disabled = true;
+            this.querySelector('button[type="submit"]').disabled = true;
+            setTimeout(scrollToBottom, 100); // Ensure scroll after potential message addition
+        });
+
+        // Re-enable input and button after a delay (adjust as needed)
+        // This is a basic example; a proper solution would handle the actual response arrival.
+        // You might need to adapt this based on how your server sends responses.
+        const originalSubmit = chatForm.onsubmit;
+        chatForm.onsubmit = function(event) {
+            if (originalSubmit) {
+                originalSubmit.call(this, event);
+            }
+            setTimeout(() => {
+                loadingIndicator.style.display = "none";
+                userInput.disabled = false;
+                this.querySelector('button[type="submit"]').disabled = false;
+                userInput.focus();
+            }, 1000); // Adjust the delay to match your loading time
+        };
+
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "/" && document.activeElement !== userInput) {
+                e.preventDefault();
+                userInput.focus();
+            }
+        });
+
+        function toggleApiKeyField() {
+            apiKeyContainer.style.display = modelSelect.value === "gpt41" ? "block" : "none";
+        }
+
+        modelSelect.addEventListener("change", toggleApiKeyField);
+        toggleApiKeyField(); // Initial check
+    </script>
 </body>
-<script>
-const chatMain = document.getElementById("main");
-chatMain.scrollTop = chatMain.scrollHeight;
-
-document.addEventListener("keydown", function(e) {
-    const input = document.querySelector("textarea[name='user_input']");
-    if (e.key === "/" && document.activeElement !== input) {
-        e.preventDefault();
-        input.focus();
-    }
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-    document.querySelector("textarea[name='user_input']").focus();
-});
-
-document.getElementById("chatForm").addEventListener("submit", function () {
-    document.getElementById("loadingIndicator").style.display = "block";
-    setTimeout(() => {
-        document.querySelector("textarea[name='user_input']").focus();
-    }, 500);
-});
-
-document.querySelector("form").addEventListener("submit", function () {
-    document.getElementById("loadingIndicator").style.display = "block";
-});
-
-const modelSelect = document.getElementById("modelSelect");
-const apiKeyContainer = document.getElementById("apiKeyContainer");
-
-function toggleApiKeyField() {
-    apiKeyContainer.style.display = modelSelect.value === "gpt41" ? "block" : "none";
-}
-
-modelSelect.addEventListener("change", toggleApiKeyField);
-toggleApiKeyField(); // Initial check
-</script>
 </html>
