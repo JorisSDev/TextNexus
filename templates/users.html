@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Users – TextNexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <div class="container py-5">
+        <h2 class="mb-4">User Management</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Access: GPT-2</th>
+                        <th>Access: BART</th>
+                        <th>Access: BERT</th>
+                        <th>Access: DeepSeek</th>
+                        <th>Access: GPT-4.1</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Alice Johnson</td>
+                        <td>alice@example.com</td>
+                        <td>Editor</td>
+                        <td><input type="checkbox" checked></td>
+                        <td><input type="checkbox"></td>
+                        <td><input type="checkbox" checked></td>
+                        <td><input type="checkbox"></td>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger">Remove</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Bob Smith</td>
+                        <td>bob@example.com</td>
+                        <td>Viewer</td>
+                        <td><input type="checkbox" checked></td>
+                        <td><input type="checkbox" checked></td>
+                        <td><input type="checkbox"></td>
+                        <td><input type="checkbox"></td>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger">Remove</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">
+            <h5>Add New User</h5>
+            <form class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" placeholder="Full name">
+                </div>
+                <div class="col-md-4">
+                    <input type="email" class="form-control" placeholder="Email">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select">
+                        <option selected>Choose role...</option>
+                        <option value="Editor">Editor</option>
+                        <option value="Viewer">Viewer</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-success w-100">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
