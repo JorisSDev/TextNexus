@@ -255,6 +255,7 @@ def create_session():
         add_chat_message(new_session, "system", "New session created.")
     return redirect(url_for("chatbot", session=new_session))
 
+
 @app.route("/delete_session/<session_name>", methods=["POST"])
 def delete_session(session_name):
     conn = sqlite3.connect("textnexus.db")
@@ -263,6 +264,11 @@ def delete_session(session_name):
     conn.commit()
     conn.close()
     return redirect(url_for("chatbot"))
+
+# Settings page route
+@app.route("/settings")
+def settings():
+    return render_template("settings.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

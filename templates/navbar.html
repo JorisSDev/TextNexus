@@ -1,0 +1,16 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+<nav class="navbar navbar-expand-lg bg-white shadow-sm border-b border-gray-200 px-4 py-3">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold text-primary" href="/">TextNexus</a>
+    <div class="ms-auto d-flex gap-3">
+      <a href="/" class="nav-link {% if request.path == '/' %}fw-semibold text-primary{% endif %}">Text Generator</a>
+      <a href="/chatbot" class="nav-link {% if request.path.startswith('/chatbot') %}fw-semibold text-primary{% endif %}">Chatbot</a>
+      <a href="/settings" class="nav-link" title="Settings">
+        <i class="fas fa-cog"></i>
+      </a>
+      <a href="/users" class="nav-link" title="Users">
+        <i class="fas fa-user"></i>
+      </a>
+    </div>
+  </div>
+</nav>
