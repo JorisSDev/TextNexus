@@ -5,40 +5,9 @@ import pandas as pd
 from flask import Flask, render_template, request, redirect, url_for
 from openai import OpenAI
 from transformers import pipeline, set_seed, AutoModelForCausalLM, AutoTokenizer
+from database import init_db
 
 app = Flask(__name__)
-
-def init_db():
-    conn = sqlite3.connect("textnexus.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS text_records (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        input_text TEXT NOT NULL,
-        output_text TEXT NOT NULL,
-        model TEXT NOT NULL,
-        chat_session_id INTEGER,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(chat_session_id) REFERENCES chat_sessions(id) ON DELETE SET NULL
-    )
-    """)
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS chat_sessions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        session_name TEXT NOT NULL,
-        role TEXT NOT NULL,
-        content TEXT NOT NULL,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-    # Check and add 'model' column if not exists
-    cursor.execute("PRAGMA table_info(chat_sessions)")
-    columns = [row[1] for row in cursor.fetchall()]
-    if 'model' not in columns:
-        cursor.execute("ALTER TABLE chat_sessions ADD COLUMN model TEXT")
-    conn.commit()
-    conn.close()
-
 
 init_db()
 
