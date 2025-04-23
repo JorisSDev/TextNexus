@@ -87,7 +87,9 @@
         <div id="sidebar" class="p-3">
             <h5 class="mb-3">Sessions</h5>
             <form method="POST" action="{{ url_for('create_session') }}" class="mb-3 d-flex">
-                <input type="text" name="new_session" class="form-control form-control-sm me-2" placeholder="New session name" required>
+                <label>
+                    <input type="text" name="new_session" class="form-control form-control-sm me-2" placeholder="New session name" required>
+                </label>
                 <button class="btn btn-sm btn-outline-primary" type="submit"><i class="fas fa-plus"></i></button>
             </form>
             <div class="list-group">
@@ -188,29 +190,13 @@
         // Scroll to bottom on page load and after new messages
         document.addEventListener("DOMContentLoaded", scrollToBottom);
 
-        chatForm.addEventListener("submit", function () {
-            loadingIndicator.style.display = "block";
-            // Optionally disable the input and button during loading
-            userInput.disabled = true;
-            this.querySelector('button[type="submit"]').disabled = true;
-            setTimeout(scrollToBottom, 100); // Ensure scroll after potential message addition
-        });
-
-        // Re-enable input and button after a delay (adjust as needed)
-        // This is a basic example; a proper solution would handle the actual response arrival.
-        // You might need to adapt this based on how your server sends responses.
-        const originalSubmit = chatForm.onsubmit;
-        chatForm.onsubmit = function(event) {
-            if (originalSubmit) {
-                originalSubmit.call(this, event);
-            }
+        chatForm.addEventListener("submit", function (event) {
             setTimeout(() => {
-                loadingIndicator.style.display = "none";
-                userInput.disabled = false;
-                this.querySelector('button[type="submit"]').disabled = false;
-                userInput.focus();
-            }, 1000); // Adjust the delay to match your loading time
-        };
+                loadingIndicator.style.display = "block";
+                userInput.disabled = true;
+                this.querySelector('button[type="submit"]').disabled = true;
+            }, 10);  // Allow the form to be serialized first
+        });
 
         document.addEventListener("keydown", function(e) {
             if (e.key === "/" && document.activeElement !== userInput) {
