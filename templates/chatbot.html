@@ -124,7 +124,9 @@
                 <select id="modelSelect" name="model" class="form-select form-select-sm" form="chatForm">
                     <option value="gpt2" {% if selected_model == 'gpt2' %}selected{% endif %}>GPT-2</option>
                     <option value="deepseek" {% if selected_model == 'deepseek' %}selected{% endif %}>DeepSeek-R1</option>
-                    <option value="gpt41" {% if selected_model == 'gpt41' %}selected{% endif %}>GPT-4.1</option>
+                    <option value="gpt41" {% if selected_model == 'gpt41' %}selected{% endif %}>GPT-4.1 (API)</option>
+                    <option value="gemini" {% if selected_model == 'Gemini' %}selected{% endif %}>Gemini (API)</option>
+                    <option value="claude" {% if selected_model == 'Claude' %}selected{% endif %}>Claude (API)</option>
                 </select>
             </div>
 
