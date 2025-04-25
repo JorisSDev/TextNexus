@@ -1,0 +1,82 @@
+@startuml
+skinparam defaultFontSize 20
+skinparam defaultFontName "Segoe UI"
+
+skinparam defaultFontStyle bold
+skinparam classFontStyle bold
+skinparam componentFontStyle bold
+skinparam noteFontStyle bold
+
+skinparam package {
+  BackgroundColor #DDF
+  BorderColor #00F
+  FontColor Black
+}
+
+title TextNexus Paketų diagrama
+
+skinparam linetype ortho
+skinparam RankSep 150
+skinparam NodeSep 150
+skinparam ArrowColor<<use>> Green
+skinparam ArrowColor<<import>> Blue
+skinparam ArrowColor<<merge>> DarkOrange
+skinparam ArrowThickness 1
+skinparam ArrowFontColor Black
+
+' === PACKAGE STRUCTURE ===
+package "templates" {
+    [chatbot.html]
+    [dashboard.html]
+    [index.html]
+    [info.html]
+    [login.html]
+    [model_configuration.html]
+    [navbar.html]
+    [register.html]
+    [settings.html]
+    [users.html]
+}
+
+package "app_logic" {
+    [app.py] as App
+    [api.py] as API
+}
+
+[torch]
+[openai]
+
+package "llm_engine" {
+    [models.py] as LLMEngine
+}
+
+package "database" {
+    [database.py] as DB
+    [textnexus.db]
+    [identifier.sqlite]
+}
+
+
+skinparam component {
+  BackgroundColor<<invisible>> white
+  BorderColor<<invisible>> white
+}
+
+' === RELATIONSHIPS ===
+App ..> API : <<use>>
+App ..> LLMEngine : <<use>>
+App ..> DB : <<use>>
+App ..> templates : <<use>>
+LLMEngine ..> DB : <<use>>
+API ..> DB : <<use>>
+
+App --> LLMEngine : <<import>>
+App --> API : <<import>>
+App --> DB : <<import>>
+LLMEngine --> torch : <<import>>
+LLMEngine --> openai : <<import>>
+
+DB --> [textnexus.db] : <<merge>>
+DB --> [identifier.sqlite] : <<merge>>
+
+@enduml

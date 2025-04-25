@@ -1,0 +1,33 @@
+@startuml
+!theme aws-orange
+title TextNexus - System Context Diagram
+
+' === People (Actors) ===
+actor "End User" as user
+
+' === External Systems ===
+rectangle "OpenAI API\nNaudojama generavimui per LLMEngine" as openai <<external>>
+rectangle "HuggingFace Transformers\nLokaliai įdiegti ML modeliai" as torch <<external>>
+
+' === Internal System ===
+package "TextNexus" {
+  component "Flask Web UI\nHTML sąsaja naudotojams" as ui
+  component "Flask API\nREST API sąsaja" as api
+  component "LLMEngine\nValdo GPT/BART/OpenAI" as llm
+  database "SQLite\nModelių rezultatai, naudotojai" as db
+}
+
+' === Relationships ===
+user --> ui : Naudoja
+user --> api : Naudoja (programiškai)
+
+ui --> llm : Kviečia modelius
+api --> llm : Vykdo generavimą
+
+llm --> openai : Naudoja API
+llm --> torch : Naudoja biblioteką
+
+llm --> db : Rašo duomenis
+api --> db : Skaito/rašo
+
+@enduml

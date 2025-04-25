@@ -1,0 +1,26 @@
+@startuml
+!theme plain
+title TextNexus – UML bendradarbiavimo diagrama (teksto generacija)
+
+' === Objektai ===
+object ":User" as user
+object ":WebUI" as ui
+object ":AppController" as app
+object ":LLMEngine" as llm
+object ":Database" as db
+
+' === Išdėstymas hierarchiškai ===
+user -down-> ui
+ui -down-> app
+app -down-> llm
+llm -down-> db
+
+' === Pranešimai tarp objektų ===
+user -> ui : 1: įveda tekstą
+ui -> app : 2: siunčia POST užklausą
+app -> llm : 3: kviečia modelį
+llm -> db : 4: išsaugo rezultatą
+llm --> app : 5: grąžina rezultatą
+app --> ui : 6: atvaizduoja rezultatą
+
+@enduml

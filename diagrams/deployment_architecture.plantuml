@@ -1,0 +1,68 @@
+@startuml
+!theme bluegray
+skinparam defaultFontName Arial
+skinparam defaultFontStyle bold
+skinparam shadowing false
+title TextNexus – Diegimo architektūros diagrama (lokali sistema)
+
+actor "Išorinis API klientas" as client_api
+
+node "Vartotojo kompiuteris / Lokalus serveris" {
+
+    node "Naršyklė (kliento pusėje)" {
+        artifact "HTML puslapiai" as html
+    }
+
+    node "Žiniatinklio serveris (Flask aplikacija)" {
+        component "app.py" as app
+        component "api.py"
+        component "HTML šablonai" as templates
+    }
+
+    node "LLM variklis" {
+        component "llm_engine.py" as llm
+        [GPT-2]
+        [BART]
+        [BERT]
+        [DeepSeek]
+        [GPT-4.1]
+        [BitNet]
+    }
+    node "SQLite DB" {
+        database "textnexus.db"
+        database "identifier.sqlite"
+    }
+
+    html --> app : HTTP užklausa (GET/POST)
+    app --> api.py : Vidiniai API kvietimai
+    client_api --> api.py : HTTP užklausa (JSON API)
+    app --> llm : Iškviečia LLM modelius
+    app --> templates : Generuoja HTML šablonus
+    app --> "textnexus.db" : Įrašo/Nuskaito duomenis
+    api.py --> "textnexus.db" : Duomenų prieiga
+    llm --> "textnexus.db" : Išsaugo generacijas
+    llm --> [GPT-2]
+    llm --> [BART]
+    llm --> [BERT]
+    llm --> [DeepSeek]
+    llm --> [BitNet]
+}
+
+cloud "Internetas (nebūtina)" {
+    node "Išorinis API" {
+        [OpenAI GPT-4.1 API]
+    }
+    llm --> [OpenAI GPT-4.1 API]
+}
+
+note top of app
+Visa sistema gali veikti visiškai vietiškai,
+jei nenaudojamas išorinis OpenAI API.
+end note
+
+note top of api.py
+API yra pasiekiamas tiek per WEB UI,
+tiek tiesiogiai iš kitų lokalių programų.
+end note
+
+@enduml
