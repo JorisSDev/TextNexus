@@ -32,8 +32,11 @@
                             "deepseek": "DeepSeek-R1_1.5B (Text Generation)",
                             "bart": "BART (Summarization)",
                             "bert": "BERT (Masked Word Prediction)",
-                            "gpt41": "GPT-4.1 (OpenAI API)",
-                            "bitnet": "BitNet b1.58 (Text Generation)"
+                            "gpt41": "GPT-4.1 (API)",
+                            "claude": "Claude (API)",
+                            "gemini": "Gemini (API)",
+                            "bitnet": "BitNet b1.58 (Text Generation)",
+                            "llama32": "LLaMA 3.2 (Text Generation)"
                         } %}
                         {% for key, value in models.items() %}
                             <option value="{{ key }}" {% if selected_model == key %}selected{% endif %}>
@@ -85,6 +88,7 @@
         const apiKeyContainer = document.getElementById("apiKeyContainer");
 
         function toggleApiKeyField() {
+            // Show API key input only for gpt41
             apiKeyContainer.style.display = modelSelect.value === "gpt41" ? "block" : "none";
         }
 
