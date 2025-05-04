@@ -17,6 +17,7 @@ def api_gpt2():
     if not prompt:
         return jsonify({"error": "Missing 'prompt'"}), 400
     result = generate_with_gpt2(prompt)
+    print("Generated result:", result)
     return jsonify(result)
 
 @api.route('/summarize/bart', methods=['POST'])

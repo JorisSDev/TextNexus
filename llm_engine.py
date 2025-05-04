@@ -39,7 +39,7 @@ mask_filler_bert = load_bert()
 generator_deepseek = load_deepseek()
 
 def generate_with_gpt2(text, chat_session_id=None):
-    results = generator_gpt2(text, max_new_tokens=50, num_return_sequences=3)
+    results = generator_gpt2(text, max_new_tokens=150, num_return_sequences=3)
     output = [res["generated_text"] for res in results]
     save_to_db(text, " | ".join(output), "gpt2", chat_session_id)
     return output
