@@ -14,7 +14,26 @@ from llm_engine import (
     generate_with_gpt41,
     generate_with_bitnet,
 )
+
 app = Flask(__name__)
+
+# --- Serve model_graphs/ statically under /static/model_graphs/ ---
+import shutil
+import os
+
+# Ensure model_graphs directory is served statically via /static/
+if not os.path.exists("static/model_graphs"):
+    os.makedirs("static/model_graphs")
+
+# Copy latest graphs from root or other location into static/model_graphs
+graph_dir = "model_graphs"
+static_dir = "static/model_graphs"
+if os.path.exists(graph_dir):
+    for fname in os.listdir(graph_dir):
+        if fname.endswith(".png"):
+            src = os.path.join(graph_dir, fname)
+            dst = os.path.join(static_dir, fname)
+            shutil.copyfile(src, dst)
 
 init_db()
 
@@ -237,6 +256,10 @@ def dashboard():
         recent_logs=recent_logs
     )
 
+@app.route("/graphs")
+def graphs():
+    return render_template("graphs.html")
+
 if __name__ == "__main__":
     app.register_blueprint(api)
-    app.run(debug=True)
+    app.run(debug=True, port=5050)
