@@ -1,6 +1,12 @@
 # **TextNexus**  
 _A Multi-Model AI System for Advanced Text Processing and Transformation_
 
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Flask](https://img.shields.io/badge/Framework-Flask-lightgrey)
+![Transformers](https://img.shields.io/badge/Transformers-HuggingFace-yellow)
+![SQLite](https://img.shields.io/badge/Database-SQLite-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 ## **Overview**  
 TextNexus is an open-source, locally deployable text generation and transformation system designed for privacy-first, offline-capable operation. It supports various types of text manipulation – such as paraphrasing, summarization, masked word prediction, and chat-style dialogue – using a modular architecture that integrates both local AI models and optional external LLM APIs.
 
@@ -52,3 +58,35 @@ git clone https://github.com/jorissdev/TextNexus.git
 cd TextNexus
 pip install -r requirements.txt
 ```
+
+---
+## 🖼️ User Interface Previews
+
+Visual overview of the main UI modules in TextNexus:
+
+### 🔹 Text Generation View
+![Text Generator](images/text_generator.png)
+
+### 🔹 Chatbot Interface
+![Chatbot](images/chatbot.png)
+
+### 🔹 Available models
+![Available Models](images/available_models.png)
+
+### 🔹 Model Configuration Panel
+![Model Configuration](images/model_configuration.png)
+
+### 🔹 Role-Based Access Control View
+![RBAC](images/RBAC.png)
+
+### 🔹 Usage Statistics Dashboard
+![Statistics](images/statistics.png)
+
+### 🔹 Settings Panel
+![Settings](images/settings.png)
+
+### 🔹 API Documentation View
+![API Info](images/api_info.png)
+
+### 🔹 Model Analysis Dashboard
+![Model Analysis](images/model_analysis.png)
