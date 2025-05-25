@@ -1,0 +1,28 @@
+@startuml
+actor Vartotojas
+
+participant "Naršyklė" as Browser
+participant "Flask serveris" as Flask
+participant "SQLite DB" as DB
+participant "LLM modulis" as LLM
+
+== Chatbot lango atidarymas ==
+Vartotojas -> Browser : Atidaro /chatbot puslapį
+Browser -> Flask : GET /chatbot
+Flask -> DB : get_all_session_names()
+DB --> Flask : sesijų sąrašas
+Flask -> DB : get_chat_messages("session1")
+DB --> Flask : pokalbio istorija
+Flask --> Browser : HTML su pokalbio istorija
+
+== Pokalbio įvedimas ir atsakymas ==
+Vartotojas -> Browser : Įveda klausimą
+Browser -> Flask : POST /chatbot su klausimu
+Flask -> DB : add_chat_message(session, "user", klausimas)
+Flask -> DB : get_chat_messages(session)
+Flask -> LLM : generate_with_* (naudojant prompt)
+LLM -> DB : save_to_db(prompt, atsakymas, model)
+LLM --> Flask : atsakymas
+Flask -> DB : add_chat_message(session, "bot", atsakymas)
+Flask --> Browser : HTML su atnaujinta pokalbio istorija
+@enduml

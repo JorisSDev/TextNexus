@@ -1,0 +1,27 @@
+@startuml
+title TextNexus – teksto generavimo procesas
+
+actor Vartotojas
+participant "TextNexus sistema" as Sistema
+participant "Duomenų bazė" as DB
+participant "Išorinis API" as API
+
+== Pradžia ==
+Vartotojas -> Sistema : Pasirinkti modelį
+Vartotojas -> Sistema : Įvesti tekstą ar klausimą
+Vartotojas -> Sistema : (Pasirinktinai) prikabinti failą
+
+== Apdorojimas ==
+Sistema -> Sistema : Atlikti semantinę analizę
+alt Naudojamas vidinis modelis
+  Sistema -> Sistema : Generuoti rezultatą
+else Naudojamas išorinis modelis
+  Sistema -> API : Siųsti užklausą
+  API --> Sistema : Gauti atsakymą
+end
+
+== Rezultatas ==
+Sistema -> DB : Išsaugoti įrašą
+Sistema --> Vartotojas : Grąžinti sugeneruotą tekstą
+
+@enduml

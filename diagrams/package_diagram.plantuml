@@ -1,5 +1,7 @@
 @startuml
-skinparam defaultFontSize 20
+
+left to right direction
+skinparam defaultFontSize 40
 skinparam defaultFontName "Segoe UI"
 
 skinparam defaultFontStyle bold
@@ -16,38 +18,33 @@ skinparam package {
 title TextNexus Paketų diagrama
 
 skinparam linetype ortho
-skinparam RankSep 150
-skinparam NodeSep 150
+skinparam PackagePadding 2000
+skinparam ArrowColor Black
+skinparam ArrowFontColor Black
+skinparam ArrowFontSize 14
+skinparam ArrowFontStyle bold
+skinparam ArrowThickness 3
+skinparam RankSep 100
+skinparam NodeSep 200
 skinparam ArrowColor<<use>> Green
 skinparam ArrowColor<<import>> Blue
 skinparam ArrowColor<<merge>> DarkOrange
-skinparam ArrowThickness 1
-skinparam ArrowFontColor Black
 
 ' === PACKAGE STRUCTURE ===
-package "templates" {
-    [chatbot.html]
-    [dashboard.html]
-    [index.html]
-    [info.html]
-    [login.html]
-    [model_configuration.html]
-    [navbar.html]
-    [register.html]
-    [settings.html]
-    [users.html]
-}
 
 package "app_logic" {
     [app.py] as App
     [api.py] as API
+    [access_controller.py] as AccessController
+    [settings.py] as Settings
 }
-
-[torch]
-[openai]
 
 package "llm_engine" {
     [models.py] as LLMEngine
+}
+
+package "templates" {
+  [HTML templates] as TemplatesComponent
 }
 
 package "database" {
@@ -56,6 +53,8 @@ package "database" {
     [identifier.sqlite]
 }
 
+[torch]
+[openai]
 
 skinparam component {
   BackgroundColor<<invisible>> white
@@ -63,20 +62,11 @@ skinparam component {
 }
 
 ' === RELATIONSHIPS ===
-App ..> API : <<use>>
-App ..> LLMEngine : <<use>>
-App ..> DB : <<use>>
-App ..> templates : <<use>>
-LLMEngine ..> DB : <<use>>
-API ..> DB : <<use>>
-
-App --> LLMEngine : <<import>>
-App --> API : <<import>>
-App --> DB : <<import>>
-LLMEngine --> torch : <<import>>
-LLMEngine --> openai : <<import>>
-
-DB --> [textnexus.db] : <<merge>>
-DB --> [identifier.sqlite] : <<merge>>
+"app_logic" ..> TemplatesComponent : <<use>>
+"app_logic" ..> "llm_engine" : <<use>>
+"app_logic" ..> "database" : <<use>>
+"llm_engine" ..> "database" : <<use>>
+"llm_engine" --> torch : <<import>>
+"llm_engine" --> openai : <<import>>
 
 @enduml
